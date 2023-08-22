@@ -38,6 +38,10 @@ export namespace Login {
   }
   export interface ResLogin {
     access_token: string;
+    userInfo: {
+      nickname: string;
+      avatar: string;
+    };
   }
   export interface ResAuthButtons {
     [key: string]: string[];
@@ -57,17 +61,11 @@ export namespace User {
   }
   export interface ResUserList {
     id: string;
-    username: string;
-    gender: number;
-    user: { detail: { age: number } };
-    idCard: string;
-    email: string;
-    address: string;
-    createTime: string;
-    status: number;
     avatar: string;
-    photo: any[];
-    children?: ResUserList[];
+    username: string;
+    nickname: string;
+    enabled: number;
+    createTime: string;
   }
   export interface ResStatus {
     userLabel: string;

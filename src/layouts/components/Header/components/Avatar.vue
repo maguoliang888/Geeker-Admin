@@ -1,7 +1,7 @@
 <template>
   <el-dropdown trigger="click">
     <div class="avatar">
-      <img src="@/assets/images/avatar.gif" alt="avatar" />
+      <img :src="avatar" alt="头像" />
     </div>
     <template #dropdown>
       <el-dropdown-menu>
@@ -35,6 +35,7 @@ import PasswordDialog from "./PasswordDialog.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
+const avatar = userStore.userInfo.avatar;
 
 // 退出登录
 const logout = () => {

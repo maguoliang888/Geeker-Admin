@@ -173,6 +173,11 @@
       height: 50px;
       border-radius: 50%;
     }
+
+    // 单元格样式
+    .el-table__cell {
+      position: static !important; // 解决el-image开启预览时 和 el-table冲突层级冲突问题
+    }
   }
 
   // 表格 pagination 样式
