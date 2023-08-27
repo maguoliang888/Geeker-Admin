@@ -1,6 +1,15 @@
 <template>
   <div class="table-box">
-    <ProTable ref="proTable" title="菜单列表" row-key="path" :indent="20" :columns="columns" :data="menuData" :pagination="false">
+    <ProTable
+      ref="proTable"
+      title="菜单列表"
+      row-key="id"
+      :columns="columns"
+      :request-api="getMenuList"
+      :pagination="false"
+      default-expand-all
+      @search="getMenuList"
+    >
       <!-- 表格 header 按钮 -->
       <template #tableHeader>
         <el-button type="primary" :icon="CirclePlus">新增菜单 </el-button>
@@ -8,7 +17,7 @@
       <!-- 菜单图标 -->
       <template #icon="scope">
         <el-icon :size="18">
-          <component :is="scope.row.meta.icon"></component>
+          <component :is="scope.row.icon"></component>
         </el-icon>
       </template>
       <!-- 菜单操作 -->
@@ -22,23 +31,30 @@
 
 <script setup lang="ts" name="menuMange">
 import { ref } from "vue";
-import { ColumnProps } from "@/components/ProTable/interface";
+import { ColumnProps, ProTableInstance } from "@/components/ProTable/interface";
 import { Delete, EditPen, CirclePlus } from "@element-plus/icons-vue";
-import authMenuList from "@/assets/json/authMenuList.json";
+// import authMenuList from "@/assets/json/authMenuList.json";
 import ProTable from "@/components/ProTable/index.vue";
+import { Menu } from "@/api/interface/menu";
+import { menuList } from "@/api/modules/menu";
+// import { data } from "autoprefixer";
 
-const proTable = ref();
-
-const menuData = ref(authMenuList.data);
+// 获取 ProTable 元素，调用其获取刷新数据方法（还能获取到当前查询参数，方便导出携带参数）
+const proTable = ref<ProTableInstance>();
 
 // 表格配置项
 const columns: ColumnProps[] = [
   { type: "index", label: "#", width: 150 },
-  { prop: "meta.title", label: "菜单名称", align: "left", search: { el: "input" } },
-  { prop: "meta.icon", label: "菜单图标" },
+  { prop: "title", label: "菜单名称", align: "left", search: { el: "input" } },
+  { prop: "icon", label: "菜单图标" },
   { prop: "name", label: "菜单 name", search: { el: "input" } },
   { prop: "path", label: "菜单路径", width: 300, search: { el: "input" } },
   { prop: "component", label: "组件路径", width: 300 },
   { prop: "operation", label: "操作", width: 250, fixed: "right" }
 ];
+
+// 查询菜单数据
+const getMenuList = async (params: Menu.ReqMenuParams) => {
+  return await menuList(params);
+};
 </script>

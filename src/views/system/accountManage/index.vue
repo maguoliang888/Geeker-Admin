@@ -11,13 +11,13 @@
           批量删除用户
         </el-button>
       </template>
-      <!-- Expand -->
-      <template #expand="scope">
-        {{ scope.row }}
-      </template>
       <!-- avatar -->
       <template #avatar="scope">
         <el-avatar :size="50" :src="scope.row.avatar" alt="头像" />
+      </template>
+      <!-- username -->
+      <template #username="scope">
+        <el-button type="primary" link>{{ scope.row.username }}</el-button>
       </template>
       <!-- 表格操作 -->
       <template #operation="scope">
@@ -38,6 +38,7 @@ import { useRouter } from "vue-router";
 import { User } from "@/api/interface";
 import { useHandleData } from "@/hooks/useHandleData";
 import { useDownload } from "@/hooks/useDownload";
+import { useAuthButtons } from "@/hooks/useAuthButtons";
 import { ElMessageBox } from "element-plus";
 import ProTable from "@/components/ProTable/index.vue";
 import ImportExcel from "@/components/ImportExcel/index.vue";
@@ -45,6 +46,7 @@ import UserDrawer from "@/views/proTable/components/UserDrawer.vue";
 import { ProTableInstance, ColumnProps } from "@/components/ProTable/interface";
 import { CirclePlus, Delete, EditPen, Download, Upload, View, Refresh } from "@element-plus/icons-vue";
 import { getUserList, deleteUser, editUser, addUser, resetUserPassWord, exportUserInfo, BatchAddUser } from "@/api/modules/user";
+import { changeEnabled } from "@/api/modules/accountManage";
 
 const router = useRouter();
 
@@ -65,6 +67,9 @@ const getTableList = (params: any) => {
   delete newParams.createTime;
   return getUserList(newParams);
 };
+
+// 页面按钮权限（按钮权限既可以使用 hooks，也可以直接使用 v-auth 指令，指令适合直接绑定在按钮上，hooks 适合根据按钮权限显示不同的内容）
+const { BUTTONS } = useAuthButtons();
 
 // 表格配置项
 const columns: ColumnProps<User.ResUserList>[] = [
@@ -95,7 +100,28 @@ const columns: ColumnProps<User.ResUserList>[] = [
         value: false
       }
     ],
-    search: { el: "select-v2" }
+    search: { el: "select-v2" },
+    render: scope => {
+      return (
+        <>
+          {BUTTONS.value.status ? (
+            <el-switch
+              model-value={scope.row.enabled}
+              active-text={scope.row.enabled ? "启用" : "禁用"}
+              active-value={true}
+              inactive-value={false}
+              onClick={() => changeAccountEnabled(scope.row)}
+            />
+          ) : (
+            <el-tag>{scope.row.enabled ? "启用" : "禁用"}</el-tag>
+          )}
+        </>
+      );
+    }
+  },
+  {
+    prop: "lastLoginTime",
+    label: "上次登录时间"
   },
   {
     prop: "createTime",
@@ -158,5 +184,11 @@ const openDrawer = (title: string, row: Partial<User.ResUserList> = {}) => {
     getTableList: proTable.value?.getTableList
   };
   drawerRef.value?.acceptParams(params);
+};
+
+// 更改启停用状态
+const changeAccountEnabled = async (row: User.ResUserList) => {
+  await useHandleData(changeEnabled, { id: row.id }, `切换【${row.username}】用户状态`);
+  proTable.value?.getTableList();
 };
 </script>

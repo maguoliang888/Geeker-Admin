@@ -65,6 +65,7 @@ export namespace User {
     username: string;
     nickname: string;
     enabled: number;
+    lastLoginTime: string;
     createTime: string;
   }
   export interface ResStatus {

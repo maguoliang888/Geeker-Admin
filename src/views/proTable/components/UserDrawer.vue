@@ -2,47 +2,43 @@
   <el-drawer v-model="drawerVisible" :destroy-on-close="true" size="450px" :title="`${drawerProps.title}用户`">
     <el-form
       ref="ruleFormRef"
-      label-width="100px"
+      label-width="110px"
       label-suffix=" :"
       :rules="rules"
       :disabled="drawerProps.isView"
       :model="drawerProps.row"
       :hide-required-asterisk="drawerProps.isView"
     >
-      <el-form-item label="用户头像" prop="avatar">
-        <UploadImg v-model:image-url="drawerProps.row!.avatar" width="135px" height="135px" :file-size="3">
+      <el-form-item label="头像">
+        <UploadImg v-model:image-url="drawerProps.row!.avatar" border-radius="50%" :file-size="3">
           <template #empty>
-            <el-icon><Avatar /></el-icon>
             <span>请上传头像</span>
           </template>
           <template #tip> 头像大小不能超过 3M </template>
         </UploadImg>
       </el-form-item>
-      <el-form-item label="用户照片" prop="photo">
-        <UploadImgs v-model:file-list="drawerProps.row!.photo" height="140px" width="140px" border-radius="50%">
-          <template #empty>
-            <el-icon><Picture /></el-icon>
-            <span>请上传照片</span>
-          </template>
-          <template #tip> 照片大小不能超过 5M </template>
-        </UploadImgs>
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="drawerProps.row!.username" placeholder="请填写用户名" clearable></el-input>
       </el-form-item>
-      <el-form-item label="用户姓名" prop="username">
-        <el-input v-model="drawerProps.row!.username" placeholder="请填写用户姓名" clearable></el-input>
+      <el-form-item label="昵称" prop="nickname">
+        <el-input v-model="drawerProps.row!.nickname" placeholder="请填写昵称" clearable></el-input>
       </el-form-item>
-      <el-form-item label="性别" prop="gender">
-        <el-select v-model="drawerProps.row!.gender" placeholder="请选择性别" clearable>
-          <el-option v-for="item in genderType" :key="item.value" :label="item.label" :value="item.value" />
+      <el-form-item label="状态" prop="enabled">
+        <el-select v-model="drawerProps.row!.enabled" placeholder="请选择状态" clearable>
+          <el-option v-for="item in userEnabled" :key="item.key" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="身份证号" prop="idCard">
-        <el-input v-model="drawerProps.row!.idCard" placeholder="请填写身份证号" clearable></el-input>
+      <el-form-item label="上次登录时间">
+        <el-date-picker v-model="drawerProps.row!.lastLoginTime" type="datetime" disabled clearable></el-date-picker>
       </el-form-item>
-      <el-form-item label="邮箱" prop="email">
-        <el-input v-model="drawerProps.row!.email" placeholder="请填写邮箱" clearable></el-input>
-      </el-form-item>
-      <el-form-item label="居住地址" prop="address">
-        <el-input v-model="drawerProps.row!.address" placeholder="请填写居住地址" clearable></el-input>
+      <el-form-item label="创建时间" prop="createTime">
+        <el-date-picker
+          v-model="drawerProps.row!.createTime"
+          type="datetime"
+          placeholder="请选择创建时间"
+          disabled
+          clearable
+        ></el-date-picker>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -54,20 +50,35 @@
 
 <script setup lang="ts" name="UserDrawer">
 import { ref, reactive } from "vue";
-import { genderType } from "@/utils/serviceDict";
+import { userEnabled } from "@/utils/serviceDict";
 import { ElMessage, FormInstance } from "element-plus";
 import { User } from "@/api/interface";
 import UploadImg from "@/components/Upload/Img.vue";
-import UploadImgs from "@/components/Upload/Imgs.vue";
+import { checkUsernameIsExists } from "@/api/modules/accountManage";
+
+// 检查用户名是否存在
+const checkUsername = async (rule: any, value: any, callback: any) => {
+  if (!drawerProps.value.row.username) {
+    callback(new Error("请填写用户名"));
+  }
+  const params = { id: drawerProps.value.row.id, username: drawerProps.value.row.username };
+  const { data } = await checkUsernameIsExists(params);
+  if (data) {
+    callback(new Error("用户名已存在"));
+  }
+  callback();
+};
 
 const rules = reactive({
-  avatar: [{ required: true, message: "请上传用户头像" }],
-  photo: [{ required: true, message: "请上传用户照片" }],
-  username: [{ required: true, message: "请填写用户姓名" }],
-  gender: [{ required: true, message: "请选择性别" }],
-  idCard: [{ required: true, message: "请填写身份证号" }],
-  email: [{ required: true, message: "请填写邮箱" }],
-  address: [{ required: true, message: "请填写居住地址" }]
+  username: [
+    {
+      required: true,
+      validator: checkUsername,
+      trigger: "blur"
+    }
+  ],
+  nickname: [{ required: true, message: "请填写昵称" }],
+  enabled: [{ required: true, message: "请选择状态" }]
 });
 
 interface DrawerProps {
